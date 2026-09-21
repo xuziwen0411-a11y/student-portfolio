@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "program": "student-portfolio-cloudflare",
+  "version": "1.3.2",
+  "releaseTag": "v1.3.2",
+  "releasedAt": "2026-09-11",
+  "importance": "important",
+  "releaseNotes": [
+    "25–50 MiB MP4静态导出原字节分块，保留画质，点击后完整收齐播放。",
+    "首个分块视频空闲预取首块，上限16 MiB；取消和关闭释放资源。",
+    "导出错误准确分类，安全诊断可复制；云端Work指令和共享离线打包入口。",
+    "保留原资源、内容、手动静态和动态发布；本补丁不新增迁移。",
+    "1.3.0或1.3.1升级仍需原恢复码确认，同1.3.2不重复轮换。"
+  ],
+  "portfolioDocumentSchemaVersion": 5,
+  "templateRepository": "https://github.com/q1433031046-ship-it/student-portfolio-cloudflare",
+  "upgradePromptManifest": "deployment/upgrade-prompt.json",
+  "upgradePromptSha256": "6a8800657b8da767edeae0d4c5c6e78d5397dae8ba0f6fb6cd3775dfa021ae4b",
+  "humanGuide": "README.md",
+  "adminGuide": "password-protected administrator interface",
+  "publicGuideRoute": null,
+  "newDeploymentPolicy": {
+    "entry": "Deploy to Cloudflare button",
+    "templateResourceIdentity": "bindings only; no database_name, database_id or KV id",
+    "fixedDatabaseNameReuseAllowed": false,
+    "effectiveWorkerName": "validated WRANGLER_CI_OVERRIDE_NAME when provided, otherwise validated wrangler name",
+    "effectiveWorkerNameCoverage": [
+      "status",
+      "version inspection",
+      "resource fingerprint",
+      "final deploy"
+    ]
+  },
+  "upgradePolicy": {
+    "eligibility": "v1.1+ or an equivalent older install with fixed DB and MEDIA_KV resource ids and matching live bindings",
+    "untouchedV1R2Only": "unsupported-fail-closed-before-fingerprint-or-deploy",
+    "provisionMissingResources": false,
+    "releaseSource": "refs/tags/v1.3.2",
+    "fingerprintCommand": "npm run cloudflare:fingerprint",
+    "fingerprintOutput": ".wrangler/upgrade-before-fingerprint.json",
+    "preDeployFingerprintCommand": "npm run cloudflare:fingerprint -- --output .wrangler/upgrade-predeploy-fingerprint.json",
+    "preDeployFingerprintOutput": ".wrangler/upgrade-predeploy-fingerprint.json",
+    "preDeployFingerprintRequirement": "strictly equal the before fingerprint after verified source convergence and exact original wrangler.jsonc restoration",
+    "baselineWritePolicy": "exclusive 0600 create; preserve across retries; existing path fails closed; owner-confirmed archive before a new upgrade round",
+    "cloudBuildCommand": "npm run deploy",
+    "cloudBuildScope": "first deployment only; existing Worker fails closed and this is never an upgrade entry",
+    "existingInstallCommand": "npm run cloudflare:deploy",
+    "postUpgradeFingerprintCommand": "npm run cloudflare:fingerprint -- --output .wrangler/upgrade-after-fingerprint.json",
+    "fingerprintCoverage": [
+      "Worker name",
+      "local Wrangler configuredWorkersDevEnabled value",
+      "D1 binding and id",
+      "KV binding and id",
+      "optional R2 binding and bucket name",
+      "all live secret binding names",
+      "runtime variable binding, type and value SHA-256"
+    ],
+    "manualWorkersDevBaseline": "record and revisit the remote workers.dev setting and full URL separately",
+    "legacySourceSequence": "verify refs/tags/v1.3.2 in a detached worktree outside the original site repository directory; invoke that tag tool by absolute path so it pins Wrangler cwd and dependencies to the verified tag root while reading the original absolute wrangler.jsonc, then converge verified tracked source into the original worktree while restoring that config",
+    "dirtyWorktreePolicy": "record original branch and commit; fail closed until owner-confirmed recoverable save; never force checkout or reset --hard",
+    "preserveExistingCloudflareResources": true,
+    "neverReplaceResourceIdsDuringUpgrade": true,
+    "preserve": [
+      "existing Worker identity and workers.dev hostname",
+      "D1 DB binding, resource id, migrations and all stored portfolio data",
+      "MEDIA_KV binding, resource id and all uploaded media",
+      "the same legacy BUCKET binding and source objects while any R2 media rows remain",
+      "Cloudflare secrets and runtime variable names",
+      "administrator identity",
+      "draft and published portfolio content",
+      "access passes, analytics and audit records"
+    ],
+    "formalUpgradeConfirmation": {
+      "route": "/admin",
+      "requiresCurrentRecoveryCode": true,
+      "recoveryCodeResult": "rotate-and-download-new-site-specific-file",
+      "passwordResult": "replace-password-verifier",
+      "sessionResult": "revoke-all-prior-admin-sessions-and-create-one-current-session"
+    },
+    "legacyMedia": {
+      "branchCondition": "uploaded media rows with storage_backend=r2",
+      "existingBucketOnly": true,
+      "newR2ResourcesAllowed": false,
+      "resumeRoute": "/api/admin/storage/migrate",
+      "chunkBytes": 4194304,
+      "sourceObjectVersion": "pin original R2 httpEtag and fail closed on change",
+      "copyVerification": [
+        "source and destination byte count",
+        "source and destination SHA-256"
+      ],
+      "finalVerification": "resumable final-verifying phase rereads every current KV chunk and compares it with the copy ledger",
+      "backendSwitch": "compare-and-swap only after the complete final-verification ledger matches",
+      "deleteSourceAutomatically": false,
+      "legacyVideoMaxBytesPreserved": 94371840,
+      "schema1HeroPolicy": "map original media key into the current hero",
+      "schema1DraftVideoPolicy": "administrator-readable private document archive reference; strip before returning public JSON and omit from preview and playback"
+    },
+    "readBeforeUpgrade": [
+      "README.md",
+      "AGENTS.md",
+      "deployment/agent-manifest.json",
+      "deployment/template-version.json",
+      "deployment/upgrade-prompt.json"
+    ]
+  }
+}
